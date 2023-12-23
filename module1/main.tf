@@ -68,7 +68,7 @@ resource "azurerm_linux_virtual_machine" "myvm" {
   name                = count.index == 0 ? "Master" : "node${count.index}"
   resource_group_name = azurerm_resource_group.terraform.name
   location            = azurerm_resource_group.terraform.location
-  size                = "Standard_DS1_v2"
+  size                = "Standard_DS2_v2"
   admin_username      = "adminuser"
   network_interface_ids = [azurerm_network_interface.my_nic[count.index].id]
   disable_password_authentication = true
@@ -98,17 +98,21 @@ resource "azurerm_linux_virtual_machine" "myvm" {
     host     = self.public_ip_address
   }
 
-  # Provisioner to install Docker
+ # Provisioner to install Docker and Kubernetes
   provisioner "remote-exec" {
     inline = [
       "sudo apt-get update",
-      "sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common",
-      "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -",
-      "sudo add-apt-repository \"deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable\"",
+      "sudo apt-get install docker.io -y",
+      
+      # Kubernetes installation commands
+      "sudo apt-get update && sudo apt-get install -y apt-transport-https curl",
+      "curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -",
+      "echo 'deb https://apt.kubernetes.io/ kubernetes-xenial main' | sudo tee /etc/apt/sources.list.d/kubernetes.list",
       "sudo apt-get update",
-      "sudo apt-get install -y docker-ce"
-    ]
-  }
+      "sudo apt-get install -y kubeadm=1.27.2-00 kubelet=1.27.2-00 kubectl=1.27.2-00",
+      "sudo apt-mark hold kubelet kubeadm kubectl"
+      ]
+    }
 }
 
 
