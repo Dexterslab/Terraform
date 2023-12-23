@@ -65,7 +65,7 @@ resource "azurerm_network_interface" "my_nic" {
 
 resource "azurerm_linux_virtual_machine" "myvm" {
   count               = 4
-  name                = "myVM-${count.index}"
+  name                = count.index == 0 ? "Master" : "node${count.index}"
   resource_group_name = azurerm_resource_group.terraform.name
   location            = azurerm_resource_group.terraform.location
   size                = "Standard_DS1_v2"
@@ -90,6 +90,7 @@ resource "azurerm_linux_virtual_machine" "myvm" {
     version   = "latest"
   }
 }
+
 
 output "vm_private_ip_addresses" {
   value = [for nic in azurerm_network_interface.my_nic : nic.private_ip_address]
