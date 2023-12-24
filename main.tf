@@ -2,6 +2,6 @@ provider "azurerm" {
   features {}
 }
 
-module "azure_vm" {
-  source = "./module1"  
+module "create_vms" {
+  source = "./aws"  
 }
